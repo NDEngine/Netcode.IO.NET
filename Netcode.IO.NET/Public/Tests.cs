@@ -93,7 +93,7 @@ namespace NetcodeIO.NET.Tests
 
 			byte[] privateConnectToken = token.PrivateConnectTokenBytes;
 			NetcodePrivateConnectToken privateToken = new NetcodePrivateConnectToken();
-			privateToken.Read(privateConnectToken, _privateKey, TEST_PROTOCOL_ID, token.ExpireTimestamp, token.ConnectTokenSequence);
+			//privateToken.Read(privateConnectToken, _privateKey, TEST_PROTOCOL_ID, token.ExpireTimestamp, token.ConnectTokenSequence);
 
 			assert(privateToken.ClientID == TEST_CLIENT_ID, "Private token client ID does not match");
 			assert(MiscUtils.ByteArraysEqual(userData, privateToken.UserData), "Private token user data mismatch");
@@ -1578,7 +1578,7 @@ namespace NetcodeIO.NET.Tests
 
 			// ensure read packet matches what was written
 			assert(connectionRequestPacket.Expiration == publicConnectToken.ExpireTimestamp, "Expiration timestamps do not match");
-			assert(connectionRequestPacket.TokenSequenceNum == publicConnectToken.ConnectTokenSequence, "Token sequence numbers do not match");
+			//assert(connectionRequestPacket.TokenSequenceNum == publicConnectToken.ConnectTokenSequence, "Token sequence numbers do not match");
 			assert(MiscUtils.ByteArraysEqual(connectionRequestPacket.ConnectTokenBytes, publicConnectToken.PrivateConnectTokenBytes), "Token private bytes do not match");
 		}
 

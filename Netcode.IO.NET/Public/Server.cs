@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-using Org.BouncyCastle.Crypto.TlsExt;
-
 using NetcodeIO.NET.Utils;
 using NetcodeIO.NET.Utils.IO;
 using NetcodeIO.NET.Internal;
@@ -335,6 +333,13 @@ namespace NetcodeIO.NET
 			double dt = time - this.time;
 			this.time = time;
 
+            // process datagram queue
+            Datagram packet;
+            while (listenSocket != null && listenSocket.Read(out packet)) {
+                processDatagram(packet.payload, packet.payloadSize, packet.sender);
+                packet.Release();
+            }
+
 			// send keep alive to clients 10 times per second
 			keepAlive += dt;
 			while (keepAlive >= 0.1)
@@ -367,15 +372,7 @@ namespace NetcodeIO.NET
 					disconnectClient(clientSlots[i]);
 				}
 			}
-
-			// process datagram queue
-			Datagram packet;
-			while (listenSocket != null && listenSocket.Read(out packet))
-			{
-				processDatagram(packet.payload, packet.payloadSize, packet.sender);
-				packet.Release();
-			}
-		}
+        }
 
 		private void serverTick(Object stateInfo)
 		{
@@ -520,6 +517,18 @@ namespace NetcodeIO.NET
 
 			var clientIndex = encryptionManager.GetClientID(cryptIdx);
 			var client = clientSlots[clientIndex];
+
+            if (!client.Confirmed) {
+                // trigger callback
+                if (OnClientConnected != null)
+                    OnClientConnected(client);
+
+                log("Client {0} connected", NetcodeLogLevel.Info, client.RemoteEndpoint);
+            }
+
+            client.Confirmed = true;
+
+            client.Touch(time);
 
 			// trigger callback
 			if (OnClientMessageReceived != null)
@@ -691,7 +700,7 @@ namespace NetcodeIO.NET
 			}
 
 			var privateConnectToken = new NetcodePrivateConnectToken();
-			if (!privateConnectToken.Read(connectionRequestPacket.ConnectTokenBytes, privateKey, protocolID, connectionRequestPacket.Expiration, connectionRequestPacket.TokenSequenceNum))
+			if (!privateConnectToken.Read(connectionRequestPacket.ConnectTokenBytes, privateKey, protocolID, connectionRequestPacket.Expiration, connectionRequestPacket.TonkenNonce))
 			{
 				log("Failed to read private token", NetcodeLogLevel.Debug);
 				connectionRequestPacket.Release();

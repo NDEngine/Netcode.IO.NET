@@ -1,4 +1,5 @@
-﻿using NetcodeIO.NET.Utils;
+﻿using System;
+using NetcodeIO.NET.Utils;
 using NetcodeIO.NET.Utils.IO;
 using NetcodeIO.NET.Internal;
 
@@ -275,13 +276,13 @@ namespace NetcodeIO.NET
 		public byte[] ServerToClientKey;
 		public byte[] UserData;
 
-		public bool Read(byte[] token, byte[] key, ulong protocolID, ulong expiration, ulong sequence)
+		public bool Read(byte[] token, byte[] key, ulong protocolID, ulong expiration, byte[] nonce )
 		{
-			byte[] tokenBuffer = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
-			int tokenLen = 0;
+			byte[] tokenBuffer = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES - Defines.MAC_SIZE);
+
 			try
 			{
-				tokenLen = PacketIO.DecryptPrivateConnectToken(token, protocolID, expiration, sequence, key, tokenBuffer);
+				PacketIO.DecryptPrivateConnectToken(token, protocolID, expiration, nonce, key, tokenBuffer);
 			}
 			catch
 			{
@@ -380,12 +381,16 @@ namespace NetcodeIO.NET
 	internal struct NetcodeConnectionRequestPacket
 	{
 		public ulong Expiration;
-		public ulong TokenSequenceNum;
+
+		//[Obsolete]
+		//public ulong TokenSequenceNum;
+        
+        public byte[] TonkenNonce;
 		public byte[] ConnectTokenBytes;
 
 		public bool Read(ByteArrayReaderWriter stream, int length, ulong protocolID)
 		{
-			if (length != 13 + 8 + 8 + 8 + Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES)
+			if (length != 13 + 8 + 8 + Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES + Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES)
 				return false;
 
 			char[] vInfo = new char[Defines.NETCODE_VERSION_INFO_BYTES];
@@ -401,7 +406,11 @@ namespace NetcodeIO.NET
 			}
 
 			this.Expiration = stream.ReadUInt64();
-			this.TokenSequenceNum = stream.ReadUInt64();
+			//this.TokenSequenceNum = stream.ReadUInt64();
+
+            this.TonkenNonce = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+			stream.ReadBytesIntoBuffer(this.TonkenNonce, Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+
 			this.ConnectTokenBytes = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
 			stream.ReadBytesIntoBuffer(this.ConnectTokenBytes, Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
 

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using NaCl.Core;
 using NetcodeIO.NET.Utils;
 using NetcodeIO.NET.Utils.IO;
 
@@ -56,8 +56,7 @@ namespace NetcodeIO.NET.Internal
 			}
 
 			int ret;
-			try
-			{
+			try {
 				ret = AEAD_Chacha20_Poly1305.Encrypt(packetData, 0, packetDataLen, additionalData, nonce, key, outBuffer);
 			}
 			catch (Exception e)
@@ -204,7 +203,7 @@ namespace NetcodeIO.NET.Internal
 		}
 
 		// Decrypt a private connect token
-		public static int DecryptPrivateConnectToken(byte[] encryptedConnectToken, ulong protocolID, ulong expireTimestamp, ulong sequence, byte[] key, byte[] outBuffer)
+		public static int DecryptPrivateConnectToken(byte[] encryptedConnectToken, ulong protocolID, ulong expireTimestamp, byte[] nonce, byte[] key, byte[] outBuffer)
 		{
 			int len = encryptedConnectToken.Length;
 
@@ -216,19 +215,36 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(expireTimestamp);
 			}
 
-			byte[] nonce = BufferPool.GetBuffer(12);
-			using (var writer = ByteArrayReaderWriter.Get(nonce))
+			byte[] nonceBuffer = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+			using (var writer = ByteArrayReaderWriter.Get(nonceBuffer))
 			{
-				writer.Write((UInt32)0);
-				writer.Write(sequence);
+				writer.WriteBuffer(nonce, Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+				//writer.Write((UInt32)0);
+				//writer.Write(sequence);
 			}
 
-			var ret = AEAD_Chacha20_Poly1305.Decrypt(encryptedConnectToken, 0, len, additionalData, nonce, key, outBuffer);
+            var aede = new XChaCha20Poly1305(key);
+
+            try {
+                var buffer = aede.Decrypt(encryptedConnectToken, additionalData, nonceBuffer);
+
+                using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+                    writer.WriteBuffer(buffer, len - Defines.MAC_SIZE);
+                }
+
+            } catch {
+                BufferPool.ReturnBuffer(additionalData);
+                BufferPool.ReturnBuffer(nonce);
+
+                throw;
+            }
+
+			//var ret = AEAD_Chacha20_Poly1305.Decrypt(encryptedConnectToken, 0, len, additionalData, nonce, key, outBuffer);
 
 			BufferPool.ReturnBuffer(additionalData);
 			BufferPool.ReturnBuffer(nonce);
 
-			return ret;
+			return 1;
 		}
 	}
 }
