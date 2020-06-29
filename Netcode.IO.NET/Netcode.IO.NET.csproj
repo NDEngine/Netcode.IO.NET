@@ -59,6 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Crypto.cs" />
     <Compile Include="Public\Client.cs" />
     <Compile Include="Core\ConnectTokenData.cs" />
     <Compile Include="Core\DatagramQueue.cs" />
@@ -83,12 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BCCrypto\BCCrypto.csproj">
-      <Project>{d7022bc7-e21d-4a79-bde7-30f01ed961df}</Project>
-      <Name>BCCrypto</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -350,11 +350,11 @@ namespace NetcodeIO.NET
 
 		public bool Read(byte[] token, ulong sequenceNum, byte[] key)
 		{
-			byte[] tokenBuffer = BufferPool.GetBuffer(300);
-			int tokenLen = 0;
+			byte[] tokenBuffer = BufferPool.GetBuffer(300 - Defines.MAC_SIZE);
+
 			try
 			{
-				tokenLen = PacketIO.DecryptChallengeToken(sequenceNum, token, key, tokenBuffer);
+				PacketIO.DecryptChallengeToken(sequenceNum, token, key, tokenBuffer);
 			}
 			catch
 			{

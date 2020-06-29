@@ -1,9 +1,7 @@
 ﻿using System;
-using NaCl.Core;
+using Netcode.IO.Internal;
 using NetcodeIO.NET.Utils;
 using NetcodeIO.NET.Utils.IO;
-
-using Org.BouncyCastle.Crypto.TlsExt;
 
 namespace NetcodeIO.NET.Internal
 {
@@ -55,14 +53,33 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(header.SequenceNumber);
 			}
 
-			int ret;
+            byte[] data = BufferPool.GetBuffer(packetDataLen);
+
+            int ret;
+
 			try {
-				ret = AEAD_Chacha20_Poly1305.Encrypt(packetData, 0, packetDataLen, additionalData, nonce, key, outBuffer);
+                BufferPool.ReturnBuffer(data);
+
+                using (var reader = ByteArrayReaderWriter.Get(packetData)) {
+                    reader.ReadBytesIntoBuffer(data, packetDataLen);
+                }
+
+                var buffer = Crypto.ChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonce);
+
+                using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+                    writer.WriteBuffer(buffer, buffer.Length);
+                }
+
+                ret = buffer.Length;
+
+                BufferPool.ReturnBuffer(data);
 			}
 			catch (Exception e)
 			{
 				BufferPool.ReturnBuffer(additionalData);
 				BufferPool.ReturnBuffer(nonce);
+                BufferPool.ReturnBuffer(data);
+
 				throw e;
 			}
 
@@ -92,15 +109,31 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(header.SequenceNumber);
 			}
 
+            byte[] ciphertext = BufferPool.GetBuffer(packetDataLen);
+
 			int ret;
-			try
-			{
-				ret = AEAD_Chacha20_Poly1305.Decrypt(packetData, 0, packetDataLen, additionalData, nonce, key, outBuffer);
-			}
+			try {
+
+                using (var reader = ByteArrayReaderWriter.Get(packetData)) {
+                    reader.ReadBytesIntoBuffer(ciphertext, packetDataLen);
+                }
+
+				var buffer = Crypto.ChaCha20Ploy1305IetfDecrypt(key, ciphertext, additionalData, nonce);
+
+				using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+					writer.WriteBuffer(buffer, buffer.Length);
+				}
+
+                ret = buffer.Length;
+
+                BufferPool.ReturnBuffer(ciphertext);
+            }
 			catch(Exception e)
 			{
 				BufferPool.ReturnBuffer(additionalData);
 				BufferPool.ReturnBuffer(nonce);
+                BufferPool.ReturnBuffer(ciphertext);
+
 				throw e;
 			}
 
@@ -124,17 +157,33 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(sequenceNum);
 			}
 
-			int ret;
-			try
-			{
-				ret = AEAD_Chacha20_Poly1305.Encrypt(packetData, 0, 300 - Defines.MAC_SIZE, additionalData, nonce, key, outBuffer);
-			}
-			catch (Exception e)
-			{
-				BufferPool.ReturnBuffer(additionalData);
-				BufferPool.ReturnBuffer(nonce);
-				throw e;
-			}
+            byte[] data = BufferPool.GetBuffer(300 - Defines.MAC_SIZE);
+
+            int ret;
+
+            try {
+                BufferPool.ReturnBuffer(data);
+
+                using (var reader = ByteArrayReaderWriter.Get(packetData)) {
+                    reader.ReadBytesIntoBuffer(data, 300 - Defines.MAC_SIZE);
+                }
+
+                var buffer = Crypto.ChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonce);
+
+                using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+                    writer.WriteBuffer(buffer, buffer.Length);
+                }
+
+                ret = buffer.Length;
+
+                BufferPool.ReturnBuffer(data);
+            } catch (Exception e) {
+                BufferPool.ReturnBuffer(additionalData);
+                BufferPool.ReturnBuffer(nonce);
+                BufferPool.ReturnBuffer(data);
+
+                throw e;
+            }
 
 			BufferPool.ReturnBuffer(additionalData);
 			BufferPool.ReturnBuffer(nonce);
@@ -156,11 +205,13 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(sequenceNum);
 			}
 
-			int ret;
-			try
-			{
-				ret = AEAD_Chacha20_Poly1305.Decrypt(packetData, 0, 300, additionalData, nonce, key, outBuffer);
-			}
+			try {
+                var buffer = Crypto.ChaCha20Ploy1305IetfDecrypt(key, packetData, additionalData, nonce);
+
+                using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+                    writer.WriteBuffer(buffer, 300 - Defines.MAC_SIZE);
+                }
+            }
 			catch (Exception e)
 			{
 				BufferPool.ReturnBuffer(additionalData);
@@ -171,7 +222,7 @@ namespace NetcodeIO.NET.Internal
 			BufferPool.ReturnBuffer(additionalData);
 			BufferPool.ReturnBuffer(nonce);
 
-			return ret;
+			return 300 - Defines.MAC_SIZE;
 		}
 
 		// Encrypt a private connect token
@@ -194,7 +245,33 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(sequence);
 			}
 
-			var ret = AEAD_Chacha20_Poly1305.Encrypt(privateConnectToken, 0, len - Defines.MAC_SIZE, additionalData, nonce, key, outBuffer);
+            byte[] data = BufferPool.GetBuffer(len - Defines.MAC_SIZE);
+
+            int ret;
+
+            try {
+                BufferPool.ReturnBuffer(data);
+
+                using (var reader = ByteArrayReaderWriter.Get(privateConnectToken)) {
+                    reader.ReadBytesIntoBuffer(data, len - Defines.MAC_SIZE);
+                }
+
+                var buffer = Crypto.ChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonce);
+
+                using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+                    writer.WriteBuffer(buffer, buffer.Length);
+                }
+
+                ret = buffer.Length;
+
+                BufferPool.ReturnBuffer(data);
+            } catch (Exception e) {
+                BufferPool.ReturnBuffer(additionalData);
+                BufferPool.ReturnBuffer(nonce);
+                BufferPool.ReturnBuffer(data);
+
+                throw e;
+            }
 
 			BufferPool.ReturnBuffer(additionalData);
 			BufferPool.ReturnBuffer(nonce);
@@ -223,10 +300,8 @@ namespace NetcodeIO.NET.Internal
 				//writer.Write(sequence);
 			}
 
-            var aede = new XChaCha20Poly1305(key);
-
             try {
-                var buffer = aede.Decrypt(encryptedConnectToken, additionalData, nonceBuffer);
+                var buffer = Crypto.XChaCha20Ploy1305IetfDecrypt(key, encryptedConnectToken, additionalData, nonceBuffer);
 
                 using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
                     writer.WriteBuffer(buffer, len - Defines.MAC_SIZE);
@@ -239,12 +314,10 @@ namespace NetcodeIO.NET.Internal
                 throw;
             }
 
-			//var ret = AEAD_Chacha20_Poly1305.Decrypt(encryptedConnectToken, 0, len, additionalData, nonce, key, outBuffer);
-
 			BufferPool.ReturnBuffer(additionalData);
 			BufferPool.ReturnBuffer(nonce);
 
-			return 1;
+			return len - Defines.MAC_SIZE;
 		}
 	}
 }
