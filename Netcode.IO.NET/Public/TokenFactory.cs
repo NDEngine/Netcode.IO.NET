@@ -31,12 +31,12 @@ namespace NetcodeIO.NET
 		/// <param name="clientID">The unique ID to assign to the client consuming this token</param>
 		/// <param name="userData">Up to 256 bytes of arbitrary user data</param>
 		/// <returns>2048 byte connect token to send to client</returns>
-		public byte[] GenerateConnectToken(IPEndPoint[] addressList, int expirySeconds, int serverTimeout, ulong sequence, ulong clientID, byte[] userData)
+		public byte[] GenerateConnectToken(IPEndPoint[] addressList, int expirySeconds, int serverTimeout, byte[] nonce, ulong clientID, byte[] userData)
 		{
-			return GenerateConnectToken(addressList, DateTime.Now.GetTotalSeconds(), expirySeconds, serverTimeout, sequence, clientID, userData);
+			return GenerateConnectToken(addressList, DateTime.Now.GetTotalSeconds(), expirySeconds, serverTimeout, nonce, clientID, userData);
 		}
 
-		internal byte[] GenerateConnectToken(IPEndPoint[] addressList, double time, int expirySeconds, int serverTimeout, ulong sequence, ulong clientID, byte[] userData)
+		internal byte[] GenerateConnectToken(IPEndPoint[] addressList, double time, int expirySeconds, int serverTimeout, byte[] nonce, ulong clientID, byte[] userData)
 		{
 			if (userData.Length > 256)
 			{
@@ -92,13 +92,13 @@ namespace NetcodeIO.NET
 			ulong expireTimestamp = expirySeconds >= 0 ? ( createTimestamp + (ulong)expirySeconds ) : 0xFFFFFFFFFFFFFFFFUL;
 
 			byte[] encryptedPrivateToken = new byte[1024];
-			PacketIO.EncryptPrivateConnectToken(privateConnectTokenBytes, protocolID, expireTimestamp, sequence, privateKey, encryptedPrivateToken);
+			PacketIO.EncryptPrivateConnectToken(privateConnectTokenBytes, protocolID, expireTimestamp, nonce, privateKey, encryptedPrivateToken);
 
 			NetcodePublicConnectToken publicToken = new NetcodePublicConnectToken();
 			publicToken.ProtocolID = protocolID;
 			publicToken.CreateTimestamp = createTimestamp;
 			publicToken.ExpireTimestamp = expireTimestamp;
-			publicToken.ConnectTokenSequence = sequence;
+
 			publicToken.PrivateConnectTokenBytes = encryptedPrivateToken;
 			publicToken.ConnectServers = privateConnectToken.ConnectServers;
 			publicToken.ClientToServerKey = clientToServerKey;

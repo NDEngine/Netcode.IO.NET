@@ -226,7 +226,7 @@ namespace NetcodeIO.NET.Internal
 		}
 
 		// Encrypt a private connect token
-		public static int EncryptPrivateConnectToken(byte[] privateConnectToken, ulong protocolID, ulong expireTimestamp, ulong sequence, byte[] key, byte[] outBuffer)
+		public static int EncryptPrivateConnectToken(byte[] privateConnectToken, ulong protocolID, ulong expireTimestamp, byte[] nonce, byte[] key, byte[] outBuffer)
 		{
 			int len = privateConnectToken.Length;
 
@@ -238,12 +238,11 @@ namespace NetcodeIO.NET.Internal
 				writer.Write(expireTimestamp);
 			}
 
-			byte[] nonce = BufferPool.GetBuffer(12);
-			using (var writer = ByteArrayReaderWriter.Get(nonce))
+			byte[] nonceBuffer = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+			using (var writer = ByteArrayReaderWriter.Get(nonceBuffer))
 			{
-				writer.Write((UInt32)0);
-				writer.Write(sequence);
-			}
+				writer.WriteBuffer(nonce, Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+            }
 
             byte[] data = BufferPool.GetBuffer(len - Defines.MAC_SIZE);
 
@@ -256,7 +255,7 @@ namespace NetcodeIO.NET.Internal
                     reader.ReadBytesIntoBuffer(data, len - Defines.MAC_SIZE);
                 }
 
-                var buffer = Crypto.ChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonce);
+                var buffer = Crypto.XChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonce);
 
                 using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
                     writer.WriteBuffer(buffer, buffer.Length);

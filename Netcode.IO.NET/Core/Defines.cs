@@ -1,6 +1,6 @@
 ﻿namespace NetcodeIO.NET
 {
-	internal static class Defines
+	public static class Defines
 	{
 		public const int NETCODE_CONNECT_TOKEN_PRIVATE_BYTES = 1024;
 		public const int NETCODE_CONNECT_TOKEN_PUBLIC_BYTES = 2048;

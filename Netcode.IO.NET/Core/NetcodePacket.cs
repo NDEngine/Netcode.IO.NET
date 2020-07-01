@@ -208,8 +208,8 @@ namespace NetcodeIO.NET
 		public ulong ProtocolID;
 		public ulong CreateTimestamp;
 		public ulong ExpireTimestamp;
-		public ulong ConnectTokenSequence;
-		public byte[] PrivateConnectTokenBytes;
+        public byte[] ConnectTokenNonce;
+        public byte[] PrivateConnectTokenBytes;
 		public ConnectTokenServerEntry[] ConnectServers;
 		public byte[] ClientToServerKey;
 		public byte[] ServerToClientKey;
@@ -226,7 +226,8 @@ namespace NetcodeIO.NET
 
 			CreateTimestamp = reader.ReadUInt64();
 			ExpireTimestamp = reader.ReadUInt64();
-			ConnectTokenSequence = reader.ReadUInt64();
+            ConnectTokenNonce = reader.ReadBytes(Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+			//ConnectTokenSequence = reader.ReadUInt64();
 			PrivateConnectTokenBytes = reader.ReadBytes(Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
 			TimeoutSeconds = (int)reader.ReadUInt32();
 
@@ -254,7 +255,8 @@ namespace NetcodeIO.NET
 
 			writer.Write(CreateTimestamp);
 			writer.Write(ExpireTimestamp);
-			writer.Write(ConnectTokenSequence);
+			//writer.Write(ConnectTokenSequence);
+			writer.Write(ConnectTokenNonce);
 			writer.Write(PrivateConnectTokenBytes);
 			writer.Write((uint)TimeoutSeconds);
 
@@ -432,12 +434,14 @@ namespace NetcodeIO.NET
 		public bool Read(ByteArrayReaderWriter stream, int length, byte[] key, ulong protocolID)
 		{
 			byte[] packetBuffer = BufferPool.GetBuffer(8 + 300 + Defines.MAC_SIZE);
+
 			int packetLen = 0;
+
 			try
 			{
 				packetLen = PacketIO.ReadPacketData(Header, stream, length, protocolID, key, packetBuffer);
 			}
-			catch(System.Exception e)
+			catch
 			{
 				BufferPool.ReturnBuffer(packetBuffer);
 				return false;

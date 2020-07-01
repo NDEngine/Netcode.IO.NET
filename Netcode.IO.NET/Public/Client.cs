@@ -665,14 +665,14 @@ namespace NetcodeIO.NET
 
 		private void sendConnectionRequest(EndPoint server)
 		{
-			byte[] packetBuffer = BufferPool.GetBuffer(1 + 13 + 8 + 8 + 8 + Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
+			byte[] packetBuffer = BufferPool.GetBuffer(1 + 13 + 8 + 8 + Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES + Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
 			using (var stream = ByteArrayReaderWriter.Get(packetBuffer))
 			{
 				stream.Write((byte)0);
 				stream.WriteASCII(Defines.NETCODE_VERSION_INFO_STR);
 				stream.Write(connectToken.ProtocolID);
 				stream.Write(connectToken.ExpireTimestamp);
-				stream.Write(connectToken.ConnectTokenSequence);
+				stream.Write(connectToken.ConnectTokenNonce);
 				stream.Write(connectToken.PrivateConnectTokenBytes);
 			}
 

@@ -69,8 +69,12 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
+			byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+			KeyUtils.GenerateKey(nonce);
+
 			ulong timestamp = DateTime.Now.ToUnixTimestamp();
-			byte[] connectToken = factory.GenerateConnectToken(connectServers, TEST_CONNECT_TOKEN_EXPIRY, 5, 1, TEST_CLIENT_ID, userData);
+
+			byte[] connectToken = factory.GenerateConnectToken(connectServers, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, TEST_CLIENT_ID, userData);
 
 			NetcodePublicConnectToken token = new NetcodePublicConnectToken();
 			using (var reader = ByteArrayReaderWriter.Get(connectToken))
@@ -394,7 +398,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -486,7 +493,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, time, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, time, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -568,8 +578,11 @@ namespace NetcodeIO.NET.Tests
 					});
 					clients[j].time = time;
 
+                    byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+                    KeyUtils.GenerateKey(nonce);
+
 					byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, time,
-						30, 5, tokenSequence, clientID, new byte[256]);
+						30, 5, nonce, clientID, new byte[256]);
 
 					clientID++;
 					tokenSequence++;
@@ -706,7 +719,10 @@ namespace NetcodeIO.NET.Tests
 				new IPEndPoint(IPAddress.Parse("127.0.0.1"), TEST_SERVER_PORT),
 			};
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(testServerEndpoints, time, 30, 5, 1UL, 1000UL, new byte[256]);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(testServerEndpoints, time, 30, 5, nonce, 1000UL, new byte[256]);
 
 			client.Connect(connectToken, false);
 
@@ -795,8 +811,11 @@ namespace NetcodeIO.NET.Tests
 				new IPEndPoint(IPAddress.Parse("127.0.0.1"), TEST_SERVER_PORT),
 			};
 
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
 			// token expires one second from when it is created
-			byte[] connectToken = tokenFactory.GenerateConnectToken(testServerEndpoints, time, 1, 1, 1UL, 1000UL, new byte[256]);
+			byte[] connectToken = tokenFactory.GenerateConnectToken(testServerEndpoints, time, 1, 1, nonce, 1000UL, new byte[256]);
 
 			client.Connect(connectToken, false);
 
@@ -884,7 +903,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -962,7 +984,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -1024,7 +1049,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+            byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -1085,7 +1113,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -1116,7 +1147,7 @@ namespace NetcodeIO.NET.Tests
 
 			ulong clientID2 = 1001;
 
-			byte[] connectToken2 = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID2, userData);
+			byte[] connectToken2 = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID2, userData);
 			client2.Connect(connectToken2, false);
 
 			while (true)
@@ -1179,7 +1210,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -1252,7 +1286,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			RemoteClient remoteClient = null;
@@ -1327,7 +1364,10 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID, userData);
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+			byte[] connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID, userData);
 			client.Connect(connectToken, false);
 
 			RemoteClient remoteClient = null;
@@ -1363,7 +1403,7 @@ namespace NetcodeIO.NET.Tests
 			assert(client.State == ClientState.Disconnected, "Client was not disconnected: " + client.State);
 
 			// now get a new connect token and attempt to reconnect
-			connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, 0, clientID + 1, userData);
+			connectToken = tokenFactory.GenerateConnectToken(new IPEndPoint[] { serverEndpoint }, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, clientID + 1, userData);
 			client.Connect(connectToken, false);
 
 			while (true)
@@ -1400,7 +1440,6 @@ namespace NetcodeIO.NET.Tests
 
 			TokenFactory tokenFactory = new TokenFactory(TEST_PROTOCOL_ID, _privateKey);
 
-			ulong nextTokenSequence = 0;
 			ulong nextClientID = 0;
 
 			const int NUM_SERVERS = 32;
@@ -1500,11 +1539,14 @@ namespace NetcodeIO.NET.Tests
 				// - if state is disconnected, grab a new connect token and connect
 				// - if state is connected: if packets received is >=10, disconnect. otherwise, send a packet
 
-				foreach (Client client in clients)
+                byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+                KeyUtils.GenerateKey(nonce);
+
+                foreach (Client client in clients)
 				{
 					if (client.State == ClientState.Disconnected)
 					{
-						var connectToken = tokenFactory.GenerateConnectToken(serverEndpoints, time, serverEndpoints.Length * 5, 5, nextTokenSequence++, nextClientID++, new byte[256]);
+						var connectToken = tokenFactory.GenerateConnectToken(serverEndpoints, time, serverEndpoints.Length * 5, 5, nonce, nextClientID++, new byte[256]);
 						client.Connect(connectToken, false);
 					}
 					else if (client.State == ClientState.Connected)
@@ -1545,10 +1587,13 @@ namespace NetcodeIO.NET.Tests
 			byte[] userData = new byte[256];
 			KeyUtils.GenerateKey(userData);
 
-			byte[] publicConnectTokenBuffer = factory.GenerateConnectToken(new IPEndPoint[]
+            byte[] nonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
+            KeyUtils.GenerateKey(nonce);
+
+            byte[] publicConnectTokenBuffer = factory.GenerateConnectToken(new IPEndPoint[]
 			{
 				new IPEndPoint( IPAddress.Parse("127.0.0.1"), TEST_SERVER_PORT )
-			}, TEST_CONNECT_TOKEN_EXPIRY, 5, 1, TEST_CLIENT_ID, userData);
+			}, TEST_CONNECT_TOKEN_EXPIRY, 5, nonce, TEST_CLIENT_ID, userData);
 
 			NetcodePublicConnectToken publicConnectToken = new NetcodePublicConnectToken();
 			using (var reader = ByteArrayReaderWriter.Get(publicConnectTokenBuffer))
@@ -1562,7 +1607,7 @@ namespace NetcodeIO.NET.Tests
 				writer.WriteASCII(Defines.NETCODE_VERSION_INFO_STR);
 				writer.Write(publicConnectToken.ProtocolID);
 				writer.Write(publicConnectToken.ExpireTimestamp);
-				writer.Write(publicConnectToken.ConnectTokenSequence);
+				writer.Write(publicConnectToken.ConnectTokenNonce);
 				writer.Write(publicConnectToken.PrivateConnectTokenBytes);
 			}
 
