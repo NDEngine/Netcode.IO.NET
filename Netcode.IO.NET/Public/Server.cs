@@ -228,6 +228,8 @@ namespace NetcodeIO.NET
 		{
 			this.tickrate = 60;
 
+			this.time = 0.0;
+
 			this.maxSlots = maxSlots;
 			this.maxConnectTokenEntries = this.maxSlots * 8;
 			this.connectTokenHistory = new usedConnectToken[this.maxConnectTokenEntries];
@@ -259,7 +261,7 @@ namespace NetcodeIO.NET
 			Start(true);
 		}
 
-		internal void Start(bool autoTick)
+		public void Start(bool autoTick)
 		{
 			if (disposed) throw new InvalidOperationException("Can't restart disposed server, please create a new server");
 
@@ -326,7 +328,7 @@ namespace NetcodeIO.NET
 		#region Core
 
 		double keepAlive = 0.0;
-		internal void Tick(double time)
+		public void Tick(double time)
 		{
 			this.listenSocket.Pump();
 
