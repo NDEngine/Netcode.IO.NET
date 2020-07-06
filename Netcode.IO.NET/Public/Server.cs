@@ -952,6 +952,7 @@ namespace NetcodeIO.NET
 			}
 
 			sendPacketToClient(packetHeader, tempPacket, writeLen, endpoint, key);
+
 			BufferPool.ReturnBuffer(tempPacket);
 		}
 

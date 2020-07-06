@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using NetcodeIO.NET.Utils.IO;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-
-using System.Threading;
-
-using NetcodeIO.NET.Utils.IO;
 
 namespace NetcodeIO.NET.Utils
 {
@@ -30,8 +27,11 @@ namespace NetcodeIO.NET.Utils
 
 		private IPAddress defaultAnyAddress;
 
+		private byte[] receiveBuffer;
+
 		public DatagramQueue(IPAddress defaultAnyAddress)
 		{
+			this.receiveBuffer = new byte[2048];
 			this.defaultAnyAddress = defaultAnyAddress;
 		}
 
@@ -60,20 +60,26 @@ namespace NetcodeIO.NET.Utils
 				else
 					sender = new IPEndPoint(defaultAnyAddress, 0);
 			}
-
-			byte[] receiveBuffer = BufferPool.GetBuffer(2048);
-			int recv = socket.ReceiveFrom(receiveBuffer, ref sender);
+			
+			int recv = socket.ReceiveFrom(this.receiveBuffer, ref sender);
 
 			if (recv > 0)
 			{
 				Datagram packet = new Datagram();
+
+				byte[] buffer = BufferPool.GetBuffer(recv);
+
+				using(var writer = ByteArrayReaderWriter.Get(buffer)) {
+					writer.WriteBuffer(this.receiveBuffer, recv);
+				}
+
 				packet.sender = sender;
-				packet.payload = receiveBuffer;
+				packet.payload = buffer;
 				packet.payloadSize = recv;
 
 				lock (datagram_mutex)
 					datagramQueue.Enqueue(packet);
-			}
+			} 
 		}
 
 		public void Enqueue(Datagram datagram)

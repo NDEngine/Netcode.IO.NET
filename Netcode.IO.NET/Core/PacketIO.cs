@@ -58,8 +58,6 @@ namespace NetcodeIO.NET.Internal
             int ret;
 
 			try {
-                BufferPool.ReturnBuffer(data);
-
                 using (var reader = ByteArrayReaderWriter.Get(packetData)) {
                     reader.ReadBytesIntoBuffer(data, packetDataLen);
                 }
@@ -120,11 +118,13 @@ namespace NetcodeIO.NET.Internal
 
 				var buffer = Crypto.ChaCha20Ploy1305IetfDecrypt(key, ciphertext, additionalData, nonce);
 
-				using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
-					writer.WriteBuffer(buffer, buffer.Length);
+				if (outBuffer != null) {
+					using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
+						writer.WriteBuffer(buffer, buffer.Length);
+					}
 				}
 
-                ret = buffer.Length;
+				ret = buffer.Length;
 
                 BufferPool.ReturnBuffer(ciphertext);
             }
@@ -162,8 +162,6 @@ namespace NetcodeIO.NET.Internal
             int ret;
 
             try {
-                BufferPool.ReturnBuffer(data);
-
                 using (var reader = ByteArrayReaderWriter.Get(packetData)) {
                     reader.ReadBytesIntoBuffer(data, 300 - Defines.MAC_SIZE);
                 }
@@ -308,13 +306,13 @@ namespace NetcodeIO.NET.Internal
 
             } catch {
                 BufferPool.ReturnBuffer(additionalData);
-                BufferPool.ReturnBuffer(nonce);
+                BufferPool.ReturnBuffer(nonceBuffer);
 
                 throw;
             }
 
 			BufferPool.ReturnBuffer(additionalData);
-			BufferPool.ReturnBuffer(nonce);
+			BufferPool.ReturnBuffer(nonceBuffer);
 
 			return len - Defines.MAC_SIZE;
 		}

@@ -193,6 +193,8 @@ namespace NetcodeIO.NET
 				MaxSlots = dataReader.ReadUInt32();
 			}
 
+			BufferPool.ReturnBuffer(tempBuffer);
+
 			return true;
 		}
 
@@ -328,6 +330,8 @@ namespace NetcodeIO.NET
 				return false;
 			}
 
+			BufferPool.ReturnBuffer(tokenBuffer);
+
 			return true;
 		}
 
@@ -370,6 +374,8 @@ namespace NetcodeIO.NET
 				UserData = reader.ReadBytes(256);
 			}
 
+			BufferPool.ReturnBuffer(tokenBuffer);
+
 			return true;
 		}
 
@@ -410,10 +416,10 @@ namespace NetcodeIO.NET
 			this.Expiration = stream.ReadUInt64();
 			//this.TokenSequenceNum = stream.ReadUInt64();
 
-            this.TonkenNonce = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
+			this.TonkenNonce = new byte[Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES];
 			stream.ReadBytesIntoBuffer(this.TonkenNonce, Defines.NETCODE_CONNECT_TOKEN_NONCE_BYTES);
 
-			this.ConnectTokenBytes = BufferPool.GetBuffer(Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
+			this.ConnectTokenBytes = new byte[Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES];
 			stream.ReadBytesIntoBuffer(this.ConnectTokenBytes, Defines.NETCODE_CONNECT_TOKEN_PRIVATE_BYTES);
 
 			return true;
@@ -421,7 +427,8 @@ namespace NetcodeIO.NET
 
 		public void Release()
 		{
-			BufferPool.ReturnBuffer(this.ConnectTokenBytes);
+			//BufferPool.ReturnBuffer(this.TonkenNonce);
+			//BufferPool.ReturnBuffer(this.ConnectTokenBytes);
 		}
 	}
 	
@@ -453,7 +460,7 @@ namespace NetcodeIO.NET
 				return false;
 			}
 
-			ChallengeTokenBytes = BufferPool.GetBuffer(300);
+			ChallengeTokenBytes = new byte[300];
 			using (var reader = ByteArrayReaderWriter.Get(packetBuffer))
 			{
 				ChallengeTokenSequence = reader.ReadUInt64();
@@ -461,6 +468,7 @@ namespace NetcodeIO.NET
 			}
 
 			BufferPool.ReturnBuffer(packetBuffer);
+
 			return true;
 		}
 
@@ -472,7 +480,7 @@ namespace NetcodeIO.NET
 
 		public void Release()
 		{
-			BufferPool.ReturnBuffer(ChallengeTokenBytes);
+			//BufferPool.ReturnBuffer(ChallengeTokenBytes);
 		}
 	}
 
@@ -522,14 +530,14 @@ namespace NetcodeIO.NET
 			if (length != Defines.MAC_SIZE)
 				return false;
 
-			byte[] tempBuffer = BufferPool.GetBuffer(0);
+			//byte[] tempBuffer = BufferPool.GetBuffer(0);
 			try
 			{
-				PacketIO.ReadPacketData(Header, stream, length, protocolID, key, tempBuffer);
+				PacketIO.ReadPacketData(Header, stream, length, protocolID, key, null);
 			}
 			catch
 			{
-				BufferPool.ReturnBuffer(tempBuffer);
+				//BufferPool.ReturnBuffer(tempBuffer);
 				return false;
 			}
 
@@ -546,14 +554,14 @@ namespace NetcodeIO.NET
 			if (length != Defines.MAC_SIZE)
 				return false;
 
-			byte[] tempBuffer = BufferPool.GetBuffer(0);
+			//byte[] tempBuffer = BufferPool.GetBuffer(0);
 			try
 			{
-				PacketIO.ReadPacketData(Header, stream, length, protocolID, key, tempBuffer);
+				PacketIO.ReadPacketData(Header, stream, length, protocolID, key, null);
 			}
 			catch
 			{
-				BufferPool.ReturnBuffer(tempBuffer);
+				//BufferPool.ReturnBuffer(tempBuffer);
 				return false;
 			}
 
