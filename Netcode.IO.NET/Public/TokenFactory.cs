@@ -98,6 +98,7 @@ namespace NetcodeIO.NET
 			publicToken.ProtocolID = protocolID;
 			publicToken.CreateTimestamp = createTimestamp;
 			publicToken.ExpireTimestamp = expireTimestamp;
+            publicToken.ConnectTokenNonce = nonce;
 
 			publicToken.PrivateConnectTokenBytes = encryptedPrivateToken;
 			publicToken.ConnectServers = privateConnectToken.ConnectServers;

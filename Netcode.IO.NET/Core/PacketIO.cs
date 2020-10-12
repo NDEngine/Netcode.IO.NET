@@ -247,13 +247,11 @@ namespace NetcodeIO.NET.Internal
             int ret;
 
             try {
-                BufferPool.ReturnBuffer(data);
-
                 using (var reader = ByteArrayReaderWriter.Get(privateConnectToken)) {
                     reader.ReadBytesIntoBuffer(data, len - Defines.MAC_SIZE);
                 }
 
-                var buffer = Crypto.XChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonce);
+                var buffer = Crypto.XChaCha20Ploy1305IetfEncrypt(key, data, additionalData, nonceBuffer);
 
                 using (var writer = ByteArrayReaderWriter.Get(outBuffer)) {
                     writer.WriteBuffer(buffer, buffer.Length);
@@ -264,14 +262,14 @@ namespace NetcodeIO.NET.Internal
                 BufferPool.ReturnBuffer(data);
             } catch (Exception e) {
                 BufferPool.ReturnBuffer(additionalData);
-                BufferPool.ReturnBuffer(nonce);
+                BufferPool.ReturnBuffer(nonceBuffer);
                 BufferPool.ReturnBuffer(data);
 
                 throw e;
             }
 
 			BufferPool.ReturnBuffer(additionalData);
-			BufferPool.ReturnBuffer(nonce);
+			BufferPool.ReturnBuffer(nonceBuffer);
 
 			return ret;
 		}
