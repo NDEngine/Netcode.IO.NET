@@ -270,9 +270,10 @@ namespace NetcodeIO.NET
 			this.listenSocket.Bind(this.listenEndpoint);
 			isRunning = true;
 
+            this.time = DateTime.Now.GetTotalSeconds();
+
 			if (autoTick)
 			{
-				this.time = DateTime.Now.GetTotalSeconds();
 				ThreadPool.QueueUserWorkItem(serverTick);
 			}
 		}
@@ -327,8 +328,12 @@ namespace NetcodeIO.NET
 
 		#region Core
 
+        public void Tick() {
+			Tick(DateTime.Now.GetTotalSeconds());
+        }
+
 		double keepAlive = 0.0;
-		public void Tick(double time)
+		internal void Tick(double time)
 		{
 			this.listenSocket.Pump();
 

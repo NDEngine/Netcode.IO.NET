@@ -285,9 +285,10 @@ namespace NetcodeIO.NET
 			currentServerEndpoint = connectServers.Dequeue();
 			createSocket(currentServerEndpoint);
 
+            this.time = DateTime.Now.GetTotalSeconds();
+
 			if (autoTick)
 			{
-				this.time = DateTime.Now.GetTotalSeconds();
 				ThreadPool.QueueUserWorkItem(clientTick);
 			}
 		}
@@ -342,8 +343,11 @@ namespace NetcodeIO.NET
 			nextPacketSequence = 0;
 			serverToClientKey = null;
 		}
+        public void Tick() {
+            Tick(DateTime.Now.GetTotalSeconds());
+        }
 
-		public void Tick(double time)
+		internal void Tick(double time)
 		{
 			if (this.socket == null) return;
 
